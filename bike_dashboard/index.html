@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울시 따릉이 핵심 현황 대시보드</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800&family=Noto+Sans+KR:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Header -->
+        <header class="header">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-bicycle"></i>
+                </div>
+                <div class="brand-text">
+                    <h1>서울시 따릉이 현황 대시보드</h1>
+                    <p>Seoul Public Bike Operational Dashboard</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="pulse-dot"></span> 실시간 데이터 연동 완료
+            </div>
+        </header>
+
+        <!-- Primary KPI Cards Section -->
+        <section class="kpi-section">
+            <!-- Total Rentals KPI Card -->
+            <div class="kpi-card glass primary-kpi">
+                <div class="kpi-icon-wrapper cyan">
+                    <i class="fa-solid fa-chart-line"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">총 누적 이용건수</span>
+                    <div class="kpi-value-container">
+                        <h2 class="kpi-value" id="totalRentals">0</h2>
+                        <span class="kpi-unit">건</span>
+                    </div>
+                    <p class="kpi-subtext"><i class="fa-solid fa-arrow-trend-up"></i> 누적 이용 총계 (약 4,165만 건)</p>
+                </div>
+                <div class="card-glow cyan-glow"></div>
+            </div>
+
+            <!-- Operating Stations KPI Card -->
+            <div class="kpi-card glass primary-kpi">
+                <div class="kpi-icon-wrapper emerald">
+                    <i class="fa-solid fa-location-dot"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">운영 대여소 수</span>
+                    <div class="kpi-value-container">
+                        <h2 class="kpi-value" id="totalStations">0</h2>
+                        <span class="kpi-unit">개소</span>
+                    </div>
+                    <p class="kpi-subtext"><i class="fa-solid fa-circle-check"></i> 서울시 전역 가동 중인 대여소</p>
+                </div>
+                <div class="card-glow emerald-glow"></div>
+            </div>
+
+            <!-- Sub Stat Card: Peak Hour -->
+            <div class="kpi-card glass secondary-kpi">
+                <div class="kpi-icon-wrapper purple">
+                    <i class="fa-solid fa-clock"></i>
+                </div>
+                <div class="kpi-content">
+                    <span class="kpi-label">최다 이용 시간대 (피크)</span>
+                    <div class="kpi-value-container">
+                        <h2 class="kpi-value-text">18시 (퇴근)</h2>
+                    </div>
+                    <p class="kpi-subtext">피크시간 대여: 4,017,557건</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Analytics Charts Section -->
+        <section class="charts-section">
+            <!-- Hourly Trend Chart Card -->
+            <div class="chart-card glass">
+                <div class="chart-header">
+                    <div>
+                        <h3><i class="fa-regular fa-clock"></i> 24시간대별 이용 패턴 추이</h3>
+                        <p class="chart-desc">시간대(00시~23시)에 따른 대여건수 분포</p>
+                    </div>
+                    <div class="badge purple-badge">퇴근 피크: 18시</div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="hourlyChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Day Type Distribution Chart Card -->
+            <div class="chart-card glass doughnut-card">
+                <div class="chart-header">
+                    <div>
+                        <h3><i class="fa-regular fa-calendar-check"></i> 평일 vs 주말 이용 비율</h3>
+                        <p class="chart-desc">출퇴근 및 레저 이용 비중</p>
+                    </div>
+                </div>
+                <div class="chart-container doughnut-container">
+                    <canvas id="dayTypeChart"></canvas>
+                </div>
+                <div class="legend-summary">
+                    <div class="legend-item">
+                        <span class="dot weekday-dot"></span>
+                        <span class="legend-label">평일: <strong>31,414,681건 (75.4%)</strong></span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="dot weekend-dot"></span>
+                        <span class="legend-label">주말: <strong>10,234,956건 (24.6%)</strong></span>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>서울시 따릉이 데이터셋 기반 핵심 대시보드 | Powered by HTML, CSS, JavaScript</p>
+        </footer>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
