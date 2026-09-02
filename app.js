@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', () => {
+function initDashboard() {
     // Exact aggregated numbers from bike_station_hourly.csv
     const TOTAL_RENTALS = 41649637;
     const TOTAL_STATIONS = 2825;
@@ -16,9 +16,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const weekdayRentals = 31414681;
     const weekendRentals = 10234956;
 
+    // Set values immediately
+    const rentalsEl = document.getElementById("totalRentals");
+    const stationsEl = document.getElementById("totalStations");
+    if (rentalsEl) rentalsEl.innerText = TOTAL_RENTALS.toLocaleString('ko-KR');
+    if (stationsEl) stationsEl.innerText = TOTAL_STATIONS.toLocaleString('ko-KR');
+
     // Counter Animation
-    animateValue("totalRentals", 0, TOTAL_RENTALS, 2000);
-    animateValue("totalStations", 0, TOTAL_STATIONS, 1500);
+    animateValue("totalRentals", 0, TOTAL_RENTALS, 1800);
+    animateValue("totalStations", 0, TOTAL_STATIONS, 1200);
 
     function animateValue(id, start, end, duration) {
         const obj = document.getElementById(id);
@@ -27,119 +33,142 @@ document.addEventListener('DOMContentLoaded', () => {
         const step = (timestamp) => {
             if (!startTimestamp) startTimestamp = timestamp;
             const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-            // Ease out cubic
             const easeProgress = 1 - Math.pow(1 - progress, 3);
             const currentVal = Math.floor(easeProgress * (end - start) + start);
-            obj.innerHTML = currentVal.toLocaleString('ko-KR');
+            obj.innerText = currentVal.toLocaleString('ko-KR');
             if (progress < 1) {
                 window.requestAnimationFrame(step);
             } else {
-                obj.innerHTML = end.toLocaleString('ko-KR');
+                obj.innerText = end.toLocaleString('ko-KR');
             }
         };
         window.requestAnimationFrame(step);
     }
 
-    // Chart.js Default Configs for Dark Mode
-    Chart.defaults.color = '#94a3b8';
-    Chart.defaults.font.family = "'Outfit', 'Noto Sans KR', sans-serif";
-
-    // 1. Hourly Line/Area Chart
-    const ctxHourly = document.getElementById('hourlyChart').getContext('2d');
-    
-    // Gradient fill for hourly chart
-    const hourlyGradient = ctxHourly.createLinearGradient(0, 0, 0, 300);
-    hourlyGradient.addColorStop(0, 'rgba(0, 217, 245, 0.45)');
-    hourlyGradient.addColorStop(1, 'rgba(0, 217, 245, 0.0)');
-
-    new Chart(ctxHourly, {
-        type: 'line',
-        data: {
-            labels: hourlyLabels,
-            datasets: [{
-                label: '대여건수',
-                data: hourlyData,
-                borderColor: '#00D9F5',
-                borderWidth: 3,
-                backgroundColor: hourlyGradient,
-                fill: true,
-                tension: 0.4,
-                pointRadius: 3,
-                pointHoverRadius: 7,
-                pointBackgroundColor: '#00D9F5',
-                pointHoverBackgroundColor: '#ffffff'
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    titleFont: { size: 14, weight: 'bold' },
-                    bodyFont: { size: 13 },
-                    padding: 12,
-                    cornerRadius: 10,
-                    borderColor: 'rgba(0, 217, 245, 0.3)',
-                    borderWidth: 1,
-                    callbacks: {
-                        label: function(context) {
-                            return ` 이용건수: ${context.parsed.y.toLocaleString('ko-KR')}건`;
-                        }
-                    }
-                }
-            },
-            scales: {
-                x: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: { font: { size: 11 } }
-                },
-                y: {
-                    grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                    ticks: {
-                        callback: function(value) {
-                            return (value / 10000).toFixed(0) + '만건';
-                        }
-                    }
-                }
-            }
+    // Chart Rendering Function with Safety Check
+    function renderCharts() {
+        if (typeof Chart === 'undefined') {
+            console.warn('Chart.js is loading or not available.');
+            setTimeout(renderCharts, 500);
+            return;
         }
-    });
 
-    // 2. Day Type Doughnut Chart
-    const ctxDayType = document.getElementById('dayTypeChart').getContext('2d');
-    new Chart(ctxDayType, {
-        type: 'doughnut',
-        data: {
-            labels: ['평일', '주말'],
-            datasets: [{
-                data: [weekdayRentals, weekendRentals],
-                backgroundColor: ['#00D9F5', '#00F5A0'],
-                borderWidth: 0,
-                hoverOffset: 8
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '72%',
-            plugins: {
-                legend: { display: false },
-                tooltip: {
-                    backgroundColor: 'rgba(15, 23, 42, 0.9)',
-                    padding: 12,
-                    cornerRadius: 10,
-                    callbacks: {
-                        label: function(context) {
-                            const val = context.parsed;
-                            const total = weekdayRentals + weekendRentals;
-                            const pct = ((val / total) * 100).toFixed(1);
-                            return ` ${context.label}: ${val.toLocaleString('ko-KR')}건 (${pct}%)`;
+        try {
+            Chart.defaults.color = '#94a3b8';
+            Chart.defaults.font.family = "'Outfit', 'Noto Sans KR', sans-serif";
+
+            // 1. Hourly Line/Area Chart
+            const hourlyCanvas = document.getElementById('hourlyChart');
+            if (hourlyCanvas) {
+                const ctxHourly = hourlyCanvas.getContext('2d');
+                const hourlyGradient = ctxHourly.createLinearGradient(0, 0, 0, 300);
+                hourlyGradient.addColorStop(0, 'rgba(0, 217, 245, 0.45)');
+                hourlyGradient.addColorStop(1, 'rgba(0, 217, 245, 0.0)');
+
+                new Chart(ctxHourly, {
+                    type: 'line',
+                    data: {
+                        labels: hourlyLabels,
+                        datasets: [{
+                            label: '대여건수',
+                            data: hourlyData,
+                            borderColor: '#00D9F5',
+                            borderWidth: 3,
+                            backgroundColor: hourlyGradient,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 3,
+                            pointHoverRadius: 7,
+                            pointBackgroundColor: '#00D9F5',
+                            pointHoverBackgroundColor: '#ffffff'
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                titleFont: { size: 14, weight: 'bold' },
+                                bodyFont: { size: 13 },
+                                padding: 12,
+                                cornerRadius: 10,
+                                borderColor: 'rgba(0, 217, 245, 0.3)',
+                                borderWidth: 1,
+                                callbacks: {
+                                    label: function(context) {
+                                        return ` 이용건수: ${context.parsed.y.toLocaleString('ko-KR')}건`;
+                                    }
+                                }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: { font: { size: 11 } }
+                            },
+                            y: {
+                                grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                                ticks: {
+                                    callback: function(value) {
+                                        return (value / 10000).toFixed(0) + '만건';
+                                    }
+                                }
+                            }
                         }
                     }
-                }
+                });
             }
+
+            // 2. Day Type Doughnut Chart
+            const doughnutCanvas = document.getElementById('dayTypeChart');
+            if (doughnutCanvas) {
+                const ctxDayType = doughnutCanvas.getContext('2d');
+                new Chart(ctxDayType, {
+                    type: 'doughnut',
+                    data: {
+                        labels: ['평일', '주말'],
+                        datasets: [{
+                            data: [weekdayRentals, weekendRentals],
+                            backgroundColor: ['#00D9F5', '#00F5A0'],
+                            borderWidth: 0,
+                            hoverOffset: 8
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        cutout: '72%',
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: {
+                                backgroundColor: 'rgba(15, 23, 42, 0.9)',
+                                padding: 12,
+                                cornerRadius: 10,
+                                callbacks: {
+                                    label: function(context) {
+                                        const val = context.parsed;
+                                        const total = weekdayRentals + weekendRentals;
+                                        const pct = ((val / total) * 100).toFixed(1);
+                                        return ` ${context.label}: ${val.toLocaleString('ko-KR')}건 (${pct}%)`;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+        } catch (err) {
+            console.error('Chart rendering error:', err);
         }
-    });
-});
+    }
+
+    renderCharts();
+}
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initDashboard);
+} else {
+    initDashboard();
+}
