@@ -1,0 +1,9 @@
+# Python / Cache
+__pycache__/
+*.py[cod]
+*$py.class
+.ipynb_checkpoints/
+
+# OS generated
+.DS_Store
+Thumbs.db
