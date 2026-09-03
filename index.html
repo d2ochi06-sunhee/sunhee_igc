@@ -293,7 +293,6 @@
             color: var(--text-main);
         }
 
-        /* Map Canvas Dimensions - Explicit Height Fixed */
         .map-wrapper {
             position: relative;
             width: 100%;
@@ -310,6 +309,11 @@
             height: 480px;
             min-height: 480px;
             z-index: 1;
+        }
+
+        /* 100% Free OpenStreetMap Dark Custom Filter (No API Key Watermark EVER) */
+        .leaflet-tile-pane {
+            filter: brightness(0.65) invert(1) contrast(3.2) hue-rotate(200deg) saturate(0.35);
         }
 
         /* Leaflet Dark Custom Popup */
@@ -656,7 +660,7 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>© 2026 Seoul Public Bicycle Interactive Map & Analytics Dashboard • Leaflet.js Integrated</p>
+            <p>© 2026 Seoul Public Bicycle Interactive Map & Analytics Dashboard • Powered by OpenStreetMap</p>
         </footer>
     </div>
 
@@ -687,34 +691,30 @@
             const mapEl = document.getElementById('bikeMap');
             if (!mapEl) return;
 
-            // Center on Seoul
             map = L.map('bikeMap', {
                 center: [37.5665, 126.9780],
                 zoom: 12,
                 zoomControl: true
             });
 
-            // CartoDB Dark Matter Tile Layer with OpenStreetMap Fallback
-            const darkTile = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-                attribution: '&copy; OpenStreetMap contributors',
-                subdomains: 'abcd',
+            // 100% Free OpenStreetMap Standard Tile Layer (Zero API Key Requirement)
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
                 maxZoom: 19
-            });
+            }).addTo(map);
 
-            darkTile.addTo(map);
-
-            // Add Custom Glowing Station Markers
+            // Add Glowing Circular Station Markers
             STATIONS_DATA.forEach((st, idx) => {
                 const isTop3 = idx < 3;
                 const markerColor = isTop3 ? '#00F5A0' : '#00D9F5';
 
                 const circleMarker = L.circleMarker([st.lat, st.lng], {
-                    radius: isTop3 ? 10 : 7,
+                    radius: isTop3 ? 11 : 8,
                     fillColor: markerColor,
                     color: '#FFFFFF',
-                    weight: 2,
-                    opacity: 0.9,
-                    fillOpacity: 0.85
+                    weight: 2.5,
+                    opacity: 0.95,
+                    fillOpacity: 0.9
                 }).addTo(map);
 
                 const popupContent = `
@@ -728,7 +728,6 @@
                 markers.push(circleMarker);
             });
 
-            // Force map size recalculation
             setTimeout(() => {
                 map.invalidateSize();
             }, 300);
