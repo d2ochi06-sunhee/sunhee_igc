@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>서울시 따릉이 스마트 위치 & 이동시간 대시보드</title>
+    <title>서울시 따릉이 위치 지도 & 스마트 데이터 대시보드</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,6 +12,9 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Leaflet.js Map Library -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
     <style>
         /* Reset & Base Styles */
@@ -24,7 +27,7 @@
 
         :root {
             --bg-dark: #060913;
-            --card-bg: rgba(15, 23, 42, 0.75);
+            --card-bg: rgba(15, 23, 42, 0.78);
             --card-border: rgba(255, 255, 255, 0.12);
             --card-hover: rgba(255, 255, 255, 0.22);
             
@@ -37,9 +40,7 @@
             --emerald-primary: #00F5A0;
             --emerald-glow: rgba(0, 245, 160, 0.4);
             --purple-primary: #9D4EDD;
-            --purple-glow: rgba(157, 78, 221, 0.4);
             --pink-primary: #FF2A85;
-            --pink-glow: rgba(255, 42, 133, 0.4);
             --orange-primary: #FF8C00;
         }
 
@@ -59,7 +60,7 @@
 
         .dashboard-wrapper {
             width: 100%;
-            max-width: 1380px;
+            max-width: 1420px;
             display: flex;
             flex-direction: column;
             gap: 2rem;
@@ -169,10 +170,10 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 245, 160, 0); }
         }
 
-        /* KPI Section (4 Key Cards) */
+        /* KPI Section */
         .kpi-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
             gap: 1.5rem;
         }
 
@@ -183,7 +184,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            min-height: 180px;
+            min-height: 175px;
         }
 
         .kpi-card:hover {
@@ -197,13 +198,13 @@
         }
 
         .kpi-icon {
-            width: 52px;
-            height: 52px;
+            width: 50px;
+            height: 50px;
             border-radius: 16px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 1.5rem;
+            font-size: 1.4rem;
         }
 
         .kpi-card.cyan .kpi-icon { background: rgba(0, 217, 245, 0.15); color: var(--cyan-primary); border: 1px solid rgba(0, 217, 245, 0.3); }
@@ -222,7 +223,7 @@
         .kpi-trend.neutral { background: rgba(0, 217, 245, 0.12); color: var(--cyan-primary); }
 
         .kpi-content {
-            margin-top: 1rem;
+            margin-top: 0.8rem;
         }
 
         .kpi-label {
@@ -239,7 +240,7 @@
         }
 
         .kpi-value {
-            font-size: 2.6rem;
+            font-size: 2.5rem;
             font-weight: 800;
             letter-spacing: -0.03em;
         }
@@ -250,13 +251,128 @@
             font-weight: 600;
         }
 
-        .kpi-subtext {
-            font-size: 0.8rem;
-            color: var(--text-muted);
-            margin-top: 0.4rem;
+        /* Map Section (Leaflet.js Interactive Map) */
+        .map-section-card {
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
-        /* Charts Section Layout */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .section-title-group {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+        }
+
+        .section-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 14px;
+            background: rgba(0, 217, 245, 0.15);
+            border: 1px solid rgba(0, 217, 245, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.3rem;
+            color: var(--cyan-primary);
+        }
+
+        .section-title-group h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+        }
+
+        .section-title-group p {
+            font-size: 0.88rem;
+            color: var(--text-sub);
+        }
+
+        .map-controls {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .map-btn {
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-sub);
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .map-btn:hover, .map-btn.active {
+            background: rgba(0, 217, 245, 0.2);
+            border-color: var(--cyan-primary);
+            color: var(--text-main);
+        }
+
+        .map-wrapper {
+            position: relative;
+            width: 100%;
+            height: 450px;
+            border-radius: 20px;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        #bikeMap {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* Leaflet Custom Dark Theme Popup */
+        .leaflet-popup-content-wrapper {
+            background: rgba(15, 23, 42, 0.95) !important;
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(0, 217, 245, 0.4) !important;
+            border-radius: 16px !important;
+            color: #FFFFFF !important;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.6) !important;
+        }
+
+        .leaflet-popup-tip {
+            background: rgba(15, 23, 42, 0.95) !important;
+        }
+
+        .map-popup-card {
+            padding: 0.4rem;
+        }
+
+        .map-popup-title {
+            font-size: 1.05rem;
+            font-weight: 800;
+            color: var(--cyan-primary);
+            margin-bottom: 0.3rem;
+        }
+
+        .map-popup-val {
+            font-size: 1.25rem;
+            font-weight: 800;
+            color: var(--emerald-primary);
+        }
+
+        .map-popup-sub {
+            font-size: 0.8rem;
+            color: var(--text-sub);
+            margin-top: 0.2rem;
+        }
+
+        /* Charts Row Top & Bottom */
         .charts-row-top {
             display: grid;
             grid-template-columns: 2fr 1fr;
@@ -276,44 +392,10 @@
             gap: 1.2rem;
         }
 
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .chart-title-group {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .chart-icon-small {
-            width: 38px;
-            height: 38px;
-            border-radius: 12px;
-            background: rgba(255, 255, 255, 0.06);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 1.1rem;
-            color: var(--cyan-primary);
-        }
-
-        .chart-title-group h2 {
-            font-size: 1.25rem;
-            font-weight: 700;
-        }
-
-        .chart-title-group p {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-        }
-
         .chart-container {
             position: relative;
             width: 100%;
-            height: 320px;
+            height: 300px;
         }
 
         /* Top Stations Rank List */
@@ -327,7 +409,7 @@
         .rank-list {
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 0.9rem;
         }
 
         .rank-item {
@@ -338,13 +420,14 @@
             background: rgba(255, 255, 255, 0.03);
             border: 1px solid rgba(255, 255, 255, 0.07);
             border-radius: 16px;
+            cursor: pointer;
             transition: transform 0.2s ease, border-color 0.2s ease;
         }
 
         .rank-item:hover {
             transform: translateX(6px);
-            border-color: rgba(0, 217, 245, 0.3);
-            background: rgba(0, 217, 245, 0.05);
+            border-color: rgba(0, 217, 245, 0.35);
+            background: rgba(0, 217, 245, 0.08);
         }
 
         .rank-left {
@@ -386,34 +469,6 @@
             color: var(--emerald-primary);
         }
 
-        /* Regional Distribution Grid */
-        .region-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: 1rem;
-            margin-top: 0.5rem;
-        }
-
-        .region-box {
-            padding: 1.1rem;
-            background: rgba(255, 255, 255, 0.03);
-            border: 1px solid rgba(255, 255, 255, 0.07);
-            border-radius: 16px;
-            text-align: center;
-        }
-
-        .region-name {
-            font-size: 0.85rem;
-            color: var(--text-sub);
-        }
-
-        .region-value {
-            font-size: 1.4rem;
-            font-weight: 800;
-            color: var(--cyan-primary);
-            margin-top: 0.3rem;
-        }
-
         /* Footer */
         .footer {
             text-align: center;
@@ -423,7 +478,6 @@
             border-top: 1px solid rgba(255, 255, 255, 0.08);
         }
 
-        /* Responsive Breakpoints */
         @media (max-width: 1024px) {
             .charts-row-top { grid-template-columns: 1fr; }
             .charts-row-bottom { grid-template-columns: 1fr; }
@@ -439,23 +493,22 @@
                     <i class="fa-solid fa-map-location-dot"></i>
                 </div>
                 <div class="brand-text">
-                    <h1>서울시 따릉이 스마트 위치 & 이동시간 대시보드</h1>
-                    <p>지역별 대여소 분포, 이동시간 패턴 및 핵심 시각화 데이터 현황</p>
+                    <h1>서울시 따릉이 위치 지도 & 스마트 데이터 대시보드</h1>
+                    <p>대여소별 위경도 지도 시각화, 이동시간 패턴 및 핵심 분석 현황</p>
                 </div>
             </div>
             <div class="header-badges">
                 <div class="badge badge-cf">
-                    <i class="fa-solid fa-bolt"></i> Cloudflare CDN Active
+                    <i class="fa-solid fa-bolt"></i> Cloudflare Edge Network
                 </div>
                 <div class="badge badge-live">
-                    <span class="pulse-dot"></span> Live Data Stream
+                    <span class="pulse-dot"></span> Interactive Map Online
                 </div>
             </div>
         </header>
 
         <!-- KPI 4 Cards -->
         <section class="kpi-grid">
-            <!-- 1. Total Usage -->
             <div class="kpi-card glass cyan">
                 <div class="kpi-header">
                     <div class="kpi-icon"><i class="fa-solid fa-chart-line"></i></div>
@@ -467,11 +520,9 @@
                         <span class="kpi-value" id="kpi-usage">0</span>
                         <span class="kpi-unit">건</span>
                     </div>
-                    <div class="kpi-subtext">서울시 전체 누적 대여 건수</div>
                 </div>
             </div>
 
-            <!-- 2. Operating Stations -->
             <div class="kpi-card glass emerald">
                 <div class="kpi-header">
                     <div class="kpi-icon"><i class="fa-solid fa-location-dot"></i></div>
@@ -483,11 +534,9 @@
                         <span class="kpi-value" id="kpi-stations">0</span>
                         <span class="kpi-unit">개소</span>
                     </div>
-                    <div class="kpi-subtext">서울시 25개 자치구 배치 완료</div>
                 </div>
             </div>
 
-            <!-- 3. Avg Duration -->
             <div class="kpi-card glass purple">
                 <div class="kpi-header">
                     <div class="kpi-icon"><i class="fa-solid fa-stopwatch"></i></div>
@@ -499,11 +548,9 @@
                         <span class="kpi-value" id="kpi-duration">0</span>
                         <span class="kpi-unit">분</span>
                     </div>
-                    <div class="kpi-subtext">출퇴근 및 단거리 이동 중심</div>
                 </div>
             </div>
 
-            <!-- 4. Active Bikes -->
             <div class="kpi-card glass pink">
                 <div class="kpi-header">
                     <div class="kpi-icon"><i class="fa-solid fa-bicycle"></i></div>
@@ -515,21 +562,43 @@
                         <span class="kpi-value" id="kpi-bikes">0</span>
                         <span class="kpi-unit">대</span>
                     </div>
-                    <div class="kpi-subtext">실시간 순환 가동률 92.4%</div>
                 </div>
+            </div>
+        </section>
+
+        <!-- Interactive Map Section -->
+        <section class="map-section-card glass">
+            <div class="section-header">
+                <div class="section-title-group">
+                    <div class="section-icon"><i class="fa-solid fa-map"></i></div>
+                    <div>
+                        <h2>서울시 대여소별 실시간 위치 지도 (Interactive Map)</h2>
+                        <p>마커를 클릭하시면 각 대여소의 상세 이용 데이터와 위치 정보를 확인할 수 있습니다.</p>
+                    </div>
+                </div>
+                <div class="map-controls">
+                    <button class="map-btn active" onclick="focusMap(37.5665, 126.9780, 12)">서울 전체보기</button>
+                    <button class="map-btn" onclick="focusMap(37.5653, 126.8273, 14)">마곡나루역</button>
+                    <button class="map-btn" onclick="focusMap(37.5271, 126.9329, 14)">여의나루역</button>
+                    <button class="map-btn" onclick="focusMap(37.5316, 127.0667, 14)">뚝섬유원지</button>
+                    <button class="map-btn" onclick="focusMap(37.5575, 126.9244, 14)">홍대입구역</button>
+                </div>
+            </div>
+            
+            <div class="map-wrapper">
+                <div id="bikeMap"></div>
             </div>
         </section>
 
         <!-- Charts Row 1: Line Chart + Duration Doughnut -->
         <section class="charts-row-top">
-            <!-- Line Chart: Hourly Usage & Duration -->
             <div class="chart-card glass">
                 <div class="chart-header">
-                    <div class="chart-title-group">
-                        <div class="chart-icon-small"><i class="fa-solid fa-chart-area"></i></div>
+                    <div class="section-title-group">
+                        <div class="section-icon" style="color: var(--cyan-primary);"><i class="fa-solid fa-chart-area"></i></div>
                         <div>
                             <h2>시간대별 이용건수 & 평균 이동시간 추이</h2>
-                            <p>24시간 대여 피크 타임 및 주간/야간 이동시간 변화</p>
+                            <p>24시간 대여 피크 타임 및 이동시간 변화</p>
                         </div>
                     </div>
                 </div>
@@ -538,11 +607,10 @@
                 </div>
             </div>
 
-            <!-- Doughnut Chart: Travel Duration Distribution -->
             <div class="chart-card glass">
                 <div class="chart-header">
-                    <div class="chart-title-group">
-                        <div class="chart-icon-small" style="color: var(--pink-primary);"><i class="fa-solid fa-pie-chart"></i></div>
+                    <div class="section-title-group">
+                        <div class="section-icon" style="color: var(--pink-primary);"><i class="fa-solid fa-pie-chart"></i></div>
                         <div>
                             <h2>이동시간 구간별 비율</h2>
                             <p>이용자별 이동시간대 분포 현황</p>
@@ -557,11 +625,10 @@
 
         <!-- Charts Row 2: Regional Distribution + Top Stations -->
         <section class="charts-row-bottom">
-            <!-- Regional Location Distribution Chart -->
             <div class="chart-card glass">
                 <div class="chart-header">
-                    <div class="chart-title-group">
-                        <div class="chart-icon-small" style="color: var(--emerald-primary);"><i class="fa-solid fa-building-user"></i></div>
+                    <div class="section-title-group">
+                        <div class="section-icon" style="color: var(--emerald-primary);"><i class="fa-solid fa-building-user"></i></div>
                         <div>
                             <h2>주요 지역구별 대여소 및 이용 분포</h2>
                             <p>서울 주요 자치구별 따릉이 거치소 밀도 현황</p>
@@ -571,88 +638,69 @@
                 <div class="chart-container">
                     <canvas id="regionChart"></canvas>
                 </div>
-                <div class="region-grid">
-                    <div class="region-box">
-                        <div class="region-name">강서/마곡 권역</div>
-                        <div class="region-value">284 개소</div>
-                    </div>
-                    <div class="region-box">
-                        <div class="region-name">송파/잠실 권역</div>
-                        <div class="region-value">256 개소</div>
-                    </div>
-                    <div class="region-box">
-                        <div class="region-name">마포/홍대 권역</div>
-                        <div class="region-value">221 개소</div>
-                    </div>
-                    <div class="region-box">
-                        <div class="region-name">영등포/여의도</div>
-                        <div class="region-value">209 개소</div>
-                    </div>
-                </div>
             </div>
 
-            <!-- Top 5 Popular Location Ranks -->
             <div class="stations-rank-card glass">
                 <div class="chart-header">
-                    <div class="chart-title-group">
-                        <div class="chart-icon-small" style="color: var(--purple-primary);"><i class="fa-solid fa-crown"></i></div>
+                    <div class="section-title-group">
+                        <div class="section-icon" style="color: var(--purple-primary);"><i class="fa-solid fa-crown"></i></div>
                         <div>
-                            <h2>최다 이용 대여소 위치 TOP 5</h2>
-                            <p>서울시 내 가장 대여가 많은 핵심 거치소 위치</p>
+                            <h2>최다 이용 대여소 위치 TOP 5 (클릭 시 이동)</h2>
+                            <p>클릭하시면 해당 대여소 위치로 지도가 이동합니다.</p>
                         </div>
                     </div>
                 </div>
                 <div class="rank-list">
-                    <div class="rank-item">
+                    <div class="rank-item" onclick="focusMap(37.5653, 126.8273, 15)">
                         <div class="rank-left">
                             <div class="rank-num top-1">1</div>
                             <div>
                                 <div class="rank-name">마곡나루역 2번 출구</div>
-                                <div class="rank-sub">강서구 마곡동 • 대여 효율 98.2%</div>
+                                <div class="rank-sub">강서구 마곡동 • lat: 37.5653, lng: 126.8273</div>
                             </div>
                         </div>
                         <div class="rank-count">173,645건</div>
                     </div>
 
-                    <div class="rank-item">
+                    <div class="rank-item" onclick="focusMap(37.5316, 127.0667, 15)">
                         <div class="rank-left">
                             <div class="rank-num top-2">2</div>
                             <div>
                                 <div class="rank-name">뚝섬유원지역 1번 출구</div>
-                                <div class="rank-sub">광진구 자양동 • 한강공원 연결</div>
+                                <div class="rank-sub">광진구 자양동 • lat: 37.5316, lng: 127.0667</div>
                             </div>
                         </div>
                         <div class="rank-count">148,920건</div>
                     </div>
 
-                    <div class="rank-item">
+                    <div class="rank-item" onclick="focusMap(37.5271, 126.9329, 15)">
                         <div class="rank-left">
                             <div class="rank-num top-3">3</div>
                             <div>
                                 <div class="rank-name">여의나루역 1번 출구</div>
-                                <div class="rank-sub">영등포구 여의도동 • 업무/레저 피크</div>
+                                <div class="rank-sub">영등포구 여의도동 • lat: 37.5271, lng: 126.9329</div>
                             </div>
                         </div>
                         <div class="rank-count">135,120건</div>
                     </div>
 
-                    <div class="rank-item">
+                    <div class="rank-item" onclick="focusMap(37.5575, 126.9244, 15)">
                         <div class="rank-left">
                             <div class="rank-num">4</div>
                             <div>
                                 <div class="rank-name">홍대입구역 2번 출구</div>
-                                <div class="rank-sub">마포구 동교동 • 대학가/상권 거점</div>
+                                <div class="rank-sub">마포구 동교동 • lat: 37.5575, lng: 126.9244</div>
                             </div>
                         </div>
                         <div class="rank-count">122,840건</div>
                     </div>
 
-                    <div class="rank-item">
+                    <div class="rank-item" onclick="focusMap(37.5049, 127.0049, 15)">
                         <div class="rank-left">
                             <div class="rank-num">5</div>
                             <div>
                                 <div class="rank-name">고속터미널역 8번 출구</div>
-                                <div class="rank-sub">서초구 반포동 • 교통 환승 거점</div>
+                                <div class="rank-sub">서초구 반포동 • lat: 37.5049, lng: 127.0049</div>
                             </div>
                         </div>
                         <div class="rank-count">110,450건</div>
@@ -663,41 +711,115 @@
 
         <!-- Footer -->
         <footer class="footer">
-            <p>© 2026 Seoul Public Bicycle Advanced Location & Analytics Dashboard • Connected via Cloudflare Global Edge</p>
+            <p>© 2026 Seoul Public Bicycle Interactive Map & Analytics Dashboard • Leaflet.js Dark Tiles Integrated</p>
         </footer>
     </div>
 
     <!-- Script Logic -->
     <script>
-        // Data Configuration
-        const DASHBOARD_METRICS = {
-            totalUsage: 2185124,
-            stationCount: 2804,
-            avgDuration: 24.8,
-            activeBikes: 38500
-        };
+        // Data & Station Location Definitions
+        const STATIONS_DATA = [
+            { name: '마곡나루역 2번 출구', lat: 37.5653, lng: 126.8273, count: 173645, district: '강서구', desc: '퇴근시간 대여 1위 (24.7%)' },
+            { name: '뚝섬유원지역 1번 출구', lat: 37.5316, lng: 127.0667, count: 148920, district: '광진구', desc: '주말 한강공원 대여 피크' },
+            { name: '여의나루역 1번 출구', lat: 37.5271, lng: 126.9329, count: 135120, district: '영등포구', desc: '출퇴근/한강 레저 복합' },
+            { name: '홍대입구역 2번 출구', lat: 37.5575, lng: 126.9244, count: 122840, district: '마포구', desc: '대학가 및 밤시간대 이용 활발' },
+            { name: '고속터미널역 8번 출구', lat: 37.5049, lng: 127.0049, count: 110450, district: '서초구', desc: '교통 환승 및 반포천 연계' },
+            { name: '시청역 5번 출구', lat: 37.5657, lng: 126.9769, count: 98200, district: '중구', desc: '도심 오피스 출근 피크' },
+            { name: '강남역 9번 출구', lat: 37.4981, lng: 127.0276, count: 95400, district: '강남구', desc: '강남대로 셔틀 이용량 급증' },
+            { name: '잠실역 6번 출구', lat: 37.5133, lng: 127.1001, count: 92100, district: '송파구', desc: '석촌호수 및 올림픽공원 거점' },
+            { name: '신촌역 1번 출구', lat: 37.5552, lng: 126.9368, count: 89300, district: '서대문구', desc: '대학 연계 단거리 이동' },
+            { name: '합정역 7번 출구', lat: 37.5489, lng: 126.9137, count: 87500, district: '마포구', desc: '양화대교 한강 연계' }
+        ];
 
-        // Number Rolling Animation
+        let map = null;
+        let markers = [];
+
+        // Initialize Leaflet Map
+        function initLeafletMap() {
+            // Center on Seoul City Center
+            map = L.map('bikeMap', {
+                center: [37.5665, 126.9780],
+                zoom: 12,
+                zoomControl: true
+            });
+
+            // CartoDB Dark Matter Tile Layer
+            L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+                subdomains: 'abcd',
+                maxZoom: 19
+            }).addTo(map);
+
+            // Add Custom Glowing Station Markers
+            STATIONS_DATA.forEach((st, idx) => {
+                const isTop3 = idx < 3;
+                const markerColor = isTop3 ? '#00F5A0' : '#00D9F5';
+
+                const circleMarker = L.circleMarker([st.lat, st.lng], {
+                    radius: isTop3 ? 10 : 7,
+                    fillColor: markerColor,
+                    color: '#FFFFFF',
+                    weight: 2,
+                    opacity: 0.9,
+                    fillOpacity: 0.85
+                }).addTo(map);
+
+                // Popup Template
+                const popupContent = `
+                    <div class="map-popup-card">
+                        <div class="map-popup-title">${st.name}</div>
+                        <div class="map-popup-val">${st.count.toLocaleString('ko-KR')}건</div>
+                        <div class="map-popup-sub">📍 위치: ${st.district} | ${st.desc}</div>
+                    </div>
+                `;
+                circleMarker.bindPopup(popupContent);
+                markers.push(circleMarker);
+            });
+        }
+
+        // Focus Map Function
+        function focusMap(lat, lng, zoomLevel) {
+            if (map) {
+                map.flyTo([lat, lng], zoomLevel, { duration: 1.2 });
+                // Find matching marker and open popup
+                const matchIndex = STATIONS_DATA.findIndex(st => Math.abs(st.lat - lat) < 0.001 && Math.abs(st.lng - lng) < 0.001);
+                if (matchIndex !== -1 && markers[matchIndex]) {
+                    setTimeout(() => {
+                        markers[matchIndex].openPopup();
+                    }, 1200);
+                }
+            }
+        }
+
+        // Initialize KPI & Charts
+        function initDashboard() {
+            // KPI Rollups
+            animateNumber('kpi-usage', 0, 2185124, 2000);
+            animateNumber('kpi-stations', 0, 2804, 1800);
+            animateNumber('kpi-duration', 0, 24.8, 2200, true);
+            animateNumber('kpi-bikes', 0, 38500, 2000);
+
+            // Leaflet Map Init
+            initLeafletMap();
+
+            // Chart.js Setup
+            initCharts();
+        }
+
         function animateNumber(id, start, end, duration, isDecimal = false) {
             const obj = document.getElementById(id);
             if (!obj) return;
-
             let startTimestamp = null;
             const step = (timestamp) => {
                 if (!startTimestamp) startTimestamp = timestamp;
                 const progress = Math.min((timestamp - startTimestamp) / duration, 1);
                 const ease = 1 - Math.pow(1 - progress, 3);
                 const current = ease * (end - start) + start;
+                if (isDecimal) obj.innerText = current.toFixed(1);
+                else obj.innerText = Math.floor(current).toLocaleString('ko-KR');
 
-                if (isDecimal) {
-                    obj.innerText = current.toFixed(1);
-                } else {
-                    obj.innerText = Math.floor(current).toLocaleString('ko-KR');
-                }
-
-                if (progress < 1) {
-                    window.requestAnimationFrame(step);
-                } else {
+                if (progress < 1) window.requestAnimationFrame(step);
+                else {
                     if (isDecimal) obj.innerText = end.toFixed(1);
                     else obj.innerText = end.toLocaleString('ko-KR');
                 }
@@ -705,29 +827,24 @@
             window.requestAnimationFrame(step);
         }
 
-        // Initialize Charts
         function initCharts() {
             Chart.defaults.color = '#94A3B8';
             Chart.defaults.font.family = "'Outfit', 'Noto Sans KR', sans-serif";
 
-            // 1. Hourly Usage & Duration Dual Chart
+            // Hourly Chart
             const hourlyCtx = document.getElementById('hourlyDurationChart').getContext('2d');
             const gradientUsage = hourlyCtx.createLinearGradient(0, 0, 0, 300);
             gradientUsage.addColorStop(0, 'rgba(0, 217, 245, 0.4)');
             gradientUsage.addColorStop(1, 'rgba(0, 217, 245, 0.0)');
 
-            const hourlyLabels = ['00시','02시','04시','06시','08시','10시','12시','14시','16시','18시','20시','22시'];
-            const hourlyUsageData = [25000, 12000, 8000, 45000, 185000, 95000, 110000, 125000, 160000, 245000, 175000, 85000];
-            const hourlyDurationData = [18.2, 16.5, 15.0, 16.8, 17.5, 21.0, 23.5, 26.8, 28.2, 24.5, 29.0, 22.4];
-
             new Chart(hourlyCtx, {
                 type: 'line',
                 data: {
-                    labels: hourlyLabels,
+                    labels: ['00시','02시','04시','06시','08시','10시','12시','14시','16시','18시','20시','22시'],
                     datasets: [
                         {
                             label: '이용건수 (건)',
-                            data: hourlyUsageData,
+                            data: [25000, 12000, 8000, 45000, 185000, 95000, 110000, 125000, 160000, 245000, 175000, 85000],
                             borderColor: '#00D9F5',
                             borderWidth: 3,
                             backgroundColor: gradientUsage,
@@ -737,11 +854,10 @@
                         },
                         {
                             label: '평균 이동시간 (분)',
-                            data: hourlyDurationData,
+                            data: [18.2, 16.5, 15.0, 16.8, 17.5, 21.0, 23.5, 26.8, 28.2, 24.5, 29.0, 22.4],
                             borderColor: '#FF2A85',
                             borderWidth: 3,
                             borderDash: [5, 5],
-                            pointBackgroundColor: '#FF2A85',
                             tension: 0.4,
                             yAxisID: 'y1'
                         }
@@ -750,34 +866,15 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: {
-                        legend: { position: 'top', labels: { boxWidth: 12 } },
-                        tooltip: {
-                            backgroundColor: 'rgba(15, 23, 42, 0.95)',
-                            borderColor: 'rgba(0, 217, 245, 0.3)',
-                            borderWidth: 1,
-                            padding: 12
-                        }
-                    },
                     scales: {
                         x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
-                        y: {
-                            type: 'linear',
-                            position: 'left',
-                            grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                            ticks: { callback: v => (v/10000).toFixed(0) + '만건' }
-                        },
-                        y1: {
-                            type: 'linear',
-                            position: 'right',
-                            grid: { drawOnChartArea: false },
-                            ticks: { callback: v => v + '분' }
-                        }
+                        y: { position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { callback: v => (v/10000).toFixed(0) + '만건' } },
+                        y1: { position: 'right', grid: { drawOnChartArea: false }, ticks: { callback: v => v + '분' } }
                     }
                 }
             });
 
-            // 2. Duration Distribution Doughnut Chart
+            // Duration Doughnut Chart
             const durationCtx = document.getElementById('durationDistChart').getContext('2d');
             new Chart(durationCtx, {
                 type: 'doughnut',
@@ -786,26 +883,18 @@
                     datasets: [{
                         data: [28.5, 42.1, 21.4, 8.0],
                         backgroundColor: ['#00D9F5', '#00F5A0', '#9D4EDD', '#FF2A85'],
-                        borderWidth: 0,
-                        hoverOffset: 8
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     cutout: '70%',
-                    plugins: {
-                        legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } },
-                        tooltip: {
-                            callbacks: {
-                                label: ctx => ` ${ctx.label}: ${ctx.parsed}%`
-                            }
-                        }
-                    }
+                    plugins: { legend: { position: 'bottom' } }
                 }
             });
 
-            // 3. Regional Location Bar Chart
+            // Regional Bar Chart
             const regionCtx = document.getElementById('regionChart').getContext('2d');
             new Chart(regionCtx, {
                 type: 'bar',
@@ -824,25 +913,13 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     indexAxis: 'y',
-                    plugins: {
-                        legend: { display: false }
-                    },
+                    plugins: { legend: { display: false } },
                     scales: {
                         x: { grid: { color: 'rgba(255, 255, 255, 0.05)' } },
                         y: { grid: { display: false } }
                     }
                 }
             });
-        }
-
-        // Initialize All
-        function initDashboard() {
-            animateNumber('kpi-usage', 0, DASHBOARD_METRICS.totalUsage, 2000);
-            animateNumber('kpi-stations', 0, DASHBOARD_METRICS.stationCount, 1800);
-            animateNumber('kpi-duration', 0, DASHBOARD_METRICS.avgDuration, 2200, true);
-            animateNumber('kpi-bikes', 0, DASHBOARD_METRICS.activeBikes, 2000);
-
-            initCharts();
         }
 
         if (document.readyState === 'loading') {
