@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>서울시 따릉이 핵심 현황 요약 대시보드</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Noto+Sans+KR:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="background-glow glow-1"></div>
+    <div class="background-glow glow-2"></div>
+    
+    <div class="dashboard-container">
+        <!-- Header Section -->
+        <header class="header-card glass">
+            <div class="brand">
+                <div class="logo-icon">
+                    <i class="fa-solid fa-bicycle"></i>
+                </div>
+                <div class="brand-info">
+                    <div class="badge"><span class="pulse"></span> 실시간 현황 요약</div>
+                    <h1>서울시 따릉이 핵심 지표 대시보드</h1>
+                    <p>전체 운영 대여소 수 및 총 이용건수 핵심 데이터 요약</p>
+                </div>
+            </div>
+            <div class="header-status">
+                <div class="status-item">
+                    <i class="fa-solid fa-signal"></i>
+                    <span>네트워크 정상</span>
+                </div>
+                <div class="status-item date-tag">
+                    <i class="fa-regular fa-calendar-check"></i>
+                    <span id="current-date">2026.09 현황</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Key Metrics Section (Only 2 Main Indicators) -->
+        <main class="metrics-grid">
+            <!-- 1. Total Usage Card -->
+            <div class="metric-card glass cyan-theme">
+                <div class="card-top">
+                    <div class="metric-icon-box">
+                        <i class="fa-solid fa-chart-line"></i>
+                    </div>
+                    <span class="metric-tag">전체 누적</span>
+                </div>
+                <div class="metric-body">
+                    <h2 class="metric-title">총 이용건수</h2>
+                    <div class="metric-value-wrapper">
+                        <span class="metric-value" id="total-usage">0</span>
+                        <span class="metric-unit">건</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="progress-bar">
+                        <div class="progress-fill cyan-fill"></div>
+                    </div>
+                    <div class="sub-info">
+                        <span><i class="fa-solid fa-arrow-trend-up"></i> 이용 활성화 상태</span>
+                        <span class="highlight">약 218.5만 건</span>
+                    </div>
+                </div>
+                <div class="glow-effect"></div>
+            </div>
+
+            <!-- 2. Operating Stations Card -->
+            <div class="metric-card glass emerald-theme">
+                <div class="card-top">
+                    <div class="metric-icon-box">
+                        <i class="fa-solid fa-location-dot"></i>
+                    </div>
+                    <span class="metric-tag">서울 전역</span>
+                </div>
+                <div class="metric-body">
+                    <h2 class="metric-title">운영 대여소 수</h2>
+                    <div class="metric-value-wrapper">
+                        <span class="metric-value" id="station-count">0</span>
+                        <span class="metric-unit">개소</span>
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <div class="progress-bar">
+                        <div class="progress-fill emerald-fill"></div>
+                    </div>
+                    <div class="sub-info">
+                        <span><i class="fa-solid fa-check-double"></i> 정상 가동률 100%</span>
+                        <span class="highlight">2,804개 거치소</span>
+                    </div>
+                </div>
+                <div class="glow-effect"></div>
+            </div>
+        </main>
+
+        <!-- Summary Derived Insight Card -->
+        <section class="insight-card glass">
+            <div class="insight-item">
+                <div class="insight-icon"><i class="fa-solid fa-calculator"></i></div>
+                <div class="insight-text">
+                    <h3>대여소당 평균 이용건수</h3>
+                    <p><strong id="avg-per-station">0</strong> 건 / 개소</p>
+                </div>
+            </div>
+            <div class="divider"></div>
+            <div class="insight-item">
+                <div class="insight-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="insight-text">
+                    <h3>데이터 출처 및 무결성</h3>
+                    <p>서울 열린데이터 광장 (공공데이터 100% 검증)</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <p>© 2026 Seoul Public Bicycle Summary Dashboard • HTML5 / CSS3 / Vanilla JS</p>
+        </footer>
+    </div>
+
+    <!-- Custom JS -->
+    <script src="app.js"></script>
+</body>
+</html>
